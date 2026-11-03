@@ -34,23 +34,23 @@
 
 ## 21. Infraestrutura e Deploy
 
-- **Artefato = release OTP (`mix release`).** O deploy **nunca** é código-fonte + `mix` no servidor; é a **release imutável** montada no CI a partir do commit SHA. `MIX_ENV=prod mix release` produz `_build/prod/rel/<app>/` com o ERTS embutido (ou `include_erts: false` quando o host tem a mesma OTP). O binário de entrada é `bin/<app>`.
+- **Artefato = release OTP (`mix release`).** O deploy **nunca** é código-fonte + `mix` no servidor; é a **release imutável** montada pelo ops a partir do commit SHA do git (nunca enviada de fora). `MIX_ENV=prod mix release` produz `_build/prod/rel/<app>/` com o ERTS embutido (ou `include_erts: false` quando o host tem a mesma OTP). O binário de entrada é `bin/<app>`.
 
 - **Comandos da release (o que o ops chama — `references/ops.md`):**
   - `bin/<app> start` — sobe em foreground (o systemd usa isto, ver `references/ops.md` §3);
   - `bin/<app> daemon` — sobe destacado (não é o padrão da casa; preferimos foreground sob systemd);
   - `bin/<app> eval "Mod.fun()"` — roda função numa VM efêmera, **sem** subir a aplicação inteira (usado para migration, ver §21.3);
-  - `bin/<app> remote` — conecta um IEx remoto ao node vivo (diagnóstico, §26);
-  - `bin/<app> rpc "expr"` — executa expressão no node vivo e retorna;
+  - `bin/<app> remote` — conecta um IEx remoto ao node vivo (**break-glass HUMANO**, §26; **vetado à IA** — piso 24);
+  - `bin/<app> rpc "expr"` — executa expressão no node vivo (**idem: humano, auditado; a IA usa só operação nomeada do ops**);
   - `bin/<app> stop` / `restart` / `pid` / `versions`.
 
 - **Config de runtime aplicada no boot** (`config/runtime.exs`, §20) — a release não carrega config compilada de ambiente.
 
 - Container/host **non-root e read-only** (ver `references/ops.md` §3 para o systemd hardening; em contêiner, `USER` não-root, `readOnlyRootFilesystem`, ERTS e release em camada imutável).
 
-- IaC: Terraform ou OpenTofu. CI/CD: GitHub Actions (monta a release, roda `mix test`/`credo`/`dialyzer`, publica o artefato).
+- IaC: Terraform ou OpenTofu. CI/CD: GitHub Actions **só em tag `hml-*`/`v*` ou sob pedido** (piso 27) — roda `mix test`/`credo`/`dialyzer`; **não publica artefato para a VPS**: o deploy é o ops na VPS buscando o SHA/tag do git (piso 23).
 
-- Promoção entre ambientes por **artefato imutável** (a mesma release, commit SHA rastreável). A release montada para hml é **exatamente** a promovida para prd — não se remonta.
+- Promoção entre ambientes por **SHA/tag imutável do git**: o ops de cada ambiente busca o **mesmo commit verificado** e monta a release limpa dele (build reprodutível, `mix.lock` travado). Nada é copiado de um ambiente para outro por `scp`/`rsync`/`docker save` (pisos 22/23).
 
 - **VETADO editar código direto no servidor (hml/prd).** O servidor é **imutável por edição manual** — recebe só a release promovida do git. **VETADO** rodar `mix` à mão em prd (o `mix` nem existe na release — só o `bin/<app>`). Precauções: filesystem read-only, **drift detection** (recusa/alerta divergência com o git), acesso de escrita = break-glass auditado. Hotfix segue o mesmo fluxo, acelerado. Detalhe e o control plane em **`references/ops.md`**.
 
@@ -88,7 +88,7 @@ bin/<app> eval "MyApp.Release.migrate()"
 
 ### 21.4 Preview Environments
 
-- PRs em serviços principais geram ambiente efêmero automaticamente (release montada do branch, node com cookie/nome isolados).
+- Ambiente efêmero sob demanda (tag/dispatch, piso 27), montado pelo ops a partir do ref do git, node com cookie/nome isolados — nunca por PR automático.
 
 ## 24. Qualidade e Git
 
@@ -104,9 +104,9 @@ bin/<app> eval "MyApp.Release.migrate()"
 
 ### 26.1 Runbooks
 
-- Conteúdo mínimo Elixir: como abrir console remoto seguro (`bin/<app> remote` — read-mostly, ação de escrita só com registro), dashboards de `:telemetry`/Phoenix LiveDashboard, como inspecionar supervisão e mailbox (`:observer`/`:recon` em ambiente controlado, ver `references/concorrencia.md`), como ler `crash dump` (`erl_crash.dump`), como forçar rollback de release, contatos.
+- Conteúdo mínimo Elixir: como um HUMANO abre o console remoto break-glass (`bin/<app> remote` — read-mostly, auditado; a IA não usa, piso 24), dashboards de `:telemetry`/Phoenix LiveDashboard, como inspecionar supervisão e mailbox (`:observer`/`:recon` em ambiente controlado, ver `references/concorrencia.md`), como ler `crash dump` (`erl_crash.dump`), como forçar rollback de release, contatos.
 
-- **Console remoto é gated:** `bin/<app> remote`/`rpc` em prd é break-glass auditado (o mesmo regime de exceção de `references/ops.md` §1) — abre-se para diagnosticar, não para operar. Operar é pelo ops.
+- **Console remoto é break-glass HUMANO:** `bin/<app> remote`/`rpc` em prd é auditado (`references/ops.md` §1) e **vetado à IA** (piso 24) — diagnosticar pela IA é por operação nomeada do ops; operar é pelo ops.
 
 ### 26.2 Incidentes
 
