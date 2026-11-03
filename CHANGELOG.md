@@ -9,6 +9,9 @@ com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 - `check-diff.sh` agora lê `.ex/.exs/.heex` (antes cego: 900 linhas + SQL interpolado passavam) e traz regras de Elixir (`String.to_atom`, `binary_to_term` sem `:safe`, `Code.eval_*`, SQL com `#{}`, `rescue _ -> nil`, `verify_none`, `:rand` em segredo, `@tag :skip`); vermelhos plantados em `.ex/.exs`.
 - `ops.md`/`operacao.md`: fim do "CI publica o artefato" — release montada pelo ops a partir do SHA do git (23); `bin/<app> rpc|remote|eval` vetados à IA, só break-glass humano (24); `ops.md` §8; `elixir-ops` alinhado (22/23/24).
 
+### Corrigido
+- `scripts/simulated/run.py`: passa no ruff da casa sem afrouxar nada — saída via `emit()` (sem `print`), esquema da URL validado (só http/https, erro claro) com teste em `run.test.sh`, `noqa` inútil removido, `datetime.UTC`, `ruff format`; comportamento preservado.
+
 ## [0.6.1] — 2026-10-20
 ### Alterado
 - Bloco herdado `engineering/iam-desenho:invariantes` sincronizado: passkey padrão na fase 0 e matriz de acesso por rota.
