@@ -2,6 +2,13 @@
 
 Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
+## [Não lançado]
+### Alterado
+- Template de CI sem `pull_request`/`push` em branch: `workflow_dispatch` + `push: tags [hml-*, v*]`, `concurrency` com `cancel-in-progress` e passo `check-ci-triggers.sh` (piso 27); DoD/exemplos que diziam "CI verde no PR" agora dizem gate local + CI remoto só antes do hml.
+- Bloco "Herda os pisos 22–29" em `SKILL.md` e `assets/CLAUDE.md`.
+- `check-diff.sh` agora lê `.ex/.exs/.heex` (antes cego: 900 linhas + SQL interpolado passavam) e traz regras de Elixir (`String.to_atom`, `binary_to_term` sem `:safe`, `Code.eval_*`, SQL com `#{}`, `rescue _ -> nil`, `verify_none`, `:rand` em segredo, `@tag :skip`); vermelhos plantados em `.ex/.exs`.
+- `ops.md`/`operacao.md`: fim do "CI publica o artefato" — release montada pelo ops a partir do SHA do git (23); `bin/<app> rpc|remote|eval` vetados à IA, só break-glass humano (24); `ops.md` §8; `elixir-ops` alinhado (22/23/24).
+
 ## [0.6.1] — 2026-10-20
 ### Alterado
 - Bloco herdado `engineering/iam-desenho:invariantes` sincronizado: passkey padrão na fase 0 e matriz de acesso por rota.
