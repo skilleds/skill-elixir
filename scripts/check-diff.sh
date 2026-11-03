@@ -22,8 +22,8 @@ fi
 
 # Arquivos de código alterados (exclui exceções da §6).
 mapfile -t FILES < <(git diff --name-only "$BASE"...HEAD 2>/dev/null \
-  | grep -E '\.(go|rs|ts|tsx|js|mjs|jsx)$' \
-  | grep -vE '(_test\.|\.test\.|/migrations/|/generated/|\.gen\.|/mocks?/)' || true)
+  | grep -E '\.(ex|exs|heex|go|rs|ts|tsx|js|mjs|jsx)$' \
+  | grep -vE '(_test\.|\.test\.|(^|/)test/|/migrations/|/generated/|\.gen\.|/mocks?/)' || true)
 
 block() { echo "${RED}✗ BLOQUEIA${RST} $1"; FAIL=1; }
 warn()  { echo "${YLW}⚠ ATENÇÃO${RST} $1"; }
@@ -86,6 +86,22 @@ scan '(query|exec|raw)\(\s*[`"'\''].*\$\{|"\s*\+\s*.*(req|input|param|body)' 'po
 scan 'catch\s*\(\s*\)\s*\{\s*\}|except\s*:\s*pass|catch\s*\{\s*\}' 'erro engolido (§37)'
 scan '@ts-ignore|: any\b|interface\{\}' 'tipo silenciado (any/@ts-ignore/interface{}) (§37)'
 scan '\.(skip|only)\(|t\.Skip\(|xit\(|@Ignore' 'teste pulado/silenciado (§37)'
+
+# 2.1) §37 — macaquices específicas de Elixir/Phoenix/Ecto (a base acima é de JS/Go e não enxerga .ex)
+scan 'String\.to_(existing_)?atom\(|List\.to_atom\(' 'átomo criado a partir de dado dinâmico — átomos não são coletados (DoS do VM); use String.to_existing_atom/allowlist/mapa explícito (§37)'
+scan ':erlang\.binary_to_term\([^,)]*\)' 'binary_to_term sem [:safe] — execução/átomo vindo de fora (§37)'
+scan 'Code\.(eval_string|eval_quoted|eval_file|compile_string)\(' 'Code.eval*/compile_string — execução de código dinâmico (§37)'
+scan '(query!?|fragment)\(.*#\{' 'SQL com interpolação #{} — use parâmetros ($1/?^) do Ecto (§10/§37)'
+scan 'rescue\s+_?[a-z_]*\s*->\s*(nil|:ok)\b|catch\s+_?,\s*_?\s*->\s*(nil|:ok)\b|rescue\s*_\s*->\s*:error' 'rescue/catch que engole o erro (retorna nil/:ok) (§37)'
+scan 'verify:\s*:verify_none' 'TLS sem verificação (verify: :verify_none) (§37)'
+scan ':rand\.(uniform|bytes)\(.*(token|secret|session|nonce|reset)|Enum\.random\(.*(token|secret|session|nonce|reset)' ':rand/Enum.random em contexto de segredo — use :crypto.strong_rand_bytes (§14/§37)'
+scan 'IEx\.pry|IO\.inspect\(.*label:\s*"(DEBUG|TMP)' 'depuração esquecida (IEx.pry/IO.inspect) (§37)'
+# testes pulados: a lista FILES isenta testes, então aqui olhamos só os de teste do diff
+mapfile -t TFILES < <(git diff --name-only "$BASE"...HEAD 2>/dev/null | grep -E '_test\.exs$' || true)
+for f in "${TFILES[@]}"; do
+  [[ -f "$f" ]] || continue
+  hit=$(grep -nE '@(module)?tag\s+:skip|@tag\s+skip:' "$f" 2>/dev/null) && while IFS= read -r l; do block "$f:${l%%:*} — teste pulado/silenciado (@tag :skip) (§37)"; done <<< "$hit"
+done
 
 # 3) §39 — índice atualizado quando muda funcionalidade
 if (( ${#FILES[@]} > 0 )); then

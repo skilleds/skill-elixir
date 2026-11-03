@@ -49,6 +49,21 @@ plant "teste pulado" web/p.ts 'it.skip("x", () => {})' 1 "teste pulado"
 plant "SQL por concatenação" svc/q.go 'db.Query("SELECT * FROM u WHERE id=" + req.ID)' 1 "SQL"
 plant "PHP no diff" legado/x.php '<?php echo 1;' 1 "PHP"
 
+echo "── VERMELHO: Elixir (o gate precisa ENXERGAR .ex/.exs — falso verde permanente do P0-2)"
+plant "diff limpo em Elixir passa" lib/svc/ok.ex 'defmodule Svc.Ok do
+  def soma(a, b), do: a + b
+end' 0 "check-diff: OK"
+plant "String.to_atom em dado dinâmico" lib/svc/a.ex 'def f(x), do: String.to_atom(x)' 1 "átomo"
+plant "binary_to_term sem :safe" lib/svc/b.ex 'def f(x), do: :erlang.binary_to_term(x)' 1 "binary_to_term"
+plant "Code.eval_string" lib/svc/c.ex 'def f(x), do: Code.eval_string(x)' 1 "Code.eval"
+plant "SQL interpolado (Repo.query!)" lib/svc/q.ex 'def f(q), do: Repo.query!("select * from u where n = #{q}")' 1 "SQL"
+plant "rescue _ -> nil" lib/svc/r.ex 'def f, do: (try do g() rescue _ -> nil end)' 1 "engole"
+plant "verify_none" config/runtime.exs 'config :x, ssl: [verify: :verify_none]' 1 "TLS"
+plant "@tag :skip em teste" test/svc/x_test.exs '@tag :skip' 1 "pulado"
+new_repo; mkdir -p lib/svc
+{ echo 'defmodule Svc.Big do'; for i in $(seq 1 800); do echo "  def v$i, do: $i"; done; echo 'end'; } > lib/svc/big.ex; commit_feat
+out=$(gate); expect ".ex de 800 linhas bloqueia (>750)" 1 $? "$out" "750"
+
 echo "── VERMELHO: tamanho de arquivo"
 new_repo; mkdir -p svc
 { echo 'package svc'; for i in $(seq 1 800); do echo "var v$i = $i"; done; } > svc/big.go; commit_feat
