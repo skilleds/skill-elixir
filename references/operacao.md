@@ -94,7 +94,7 @@ bin/<app> eval "MyApp.Release.migrate()"
 
 - ≥ 1 reviewer (≥ 2 para contexto de domínio, schema/migration, segurança).
 
-- CI verde obrigatório: `mix test`, `mix format --check-formatted`, `mix credo --strict`, `mix dialyzer`, `mix deps.audit`/`mix hex.audit` (`references/stack-versoes.md`).
+- Gate local verde obrigatório por commit (CI remoto só antes do hml/tag — piso 27): `mix test`, `mix format --check-formatted`, `mix credo --strict`, `mix dialyzer`, `mix deps.audit`/`mix hex.audit` (`references/stack-versoes.md`).
 
 ## 25. Ownership
 

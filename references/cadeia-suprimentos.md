@@ -26,7 +26,7 @@
 
 **SHOULD**
 - `mix hex.outdated` na rotina para não acumular defasagem (patch de segurança perdido é dívida).
-- Atualização automatizada (Dependabot/Renovate suportam `mix`) com CI verde como gate.
+- Atualização automatizada (Dependabot/Renovate suportam `mix`) com o gate local verde (e o CI remoto antes do hml) como trava.
 - Espelho/proxy de Hex (self-hosted) para build crítico não depender de `repo.hex.pm` no ar; `HEX_MIRROR`/repo privado para pacote interno.
 
 **VETADO**

@@ -69,8 +69,8 @@ A versão da linguagem **não** é "a que estava na máquina". É **declarada, c
 
 Subir versão é rotina saudável, feita **de propósito e registrada**, não deriva acidental.
 
-- **Patch/minor de dep** (`mix.lock`): pela regra escoteiro/higiene contínua; entra no PR, CI verde (`mix test`/`credo`/`dialyzer`), sem cerimônia extra além do diff do lock revisado.
-- **Minor de Elixir/OTP/Phoenix:** planejado, com CI rodando o par novo antes de promover; changelog lido (deprecations viram warning → resolver no mesmo PR, não deixar acumular).
+- **Patch/minor de dep** (`mix.lock`): pela regra escoteiro/higiene contínua; entra com gate local verde (`mix test`/`credo`/`dialyzer`), sem cerimônia extra além do diff do lock revisado.
+- **Minor de Elixir/OTP/Phoenix:** planejado, com o CI remoto rodando o par novo uma vez antes de promover a hml; changelog lido (deprecations viram warning → resolver no mesmo commit, não deixar acumular).
 - **MAJOR de Elixir, OTP, Phoenix, Ecto, ou troca de lib núcleo → ADR obrigatório (`operacao.md` §27).** O ADR registra: o par (Elixir, OTP) alvo, o que quebra, o plano de migração, quem é dono, e a janela. Bump de major sem ADR é desvio (§37).
 - **Nunca EOL.** Entrar em janela de fim de suporte de Elixir/OTP dispara task de bump com prioridade — não espera "sobrar tempo".
 - **Deprecation não se ignora.** Warning de deprecation na compilação é dívida com prazo; `credo`/CI podem tratar como falha para forçar a limpeza.

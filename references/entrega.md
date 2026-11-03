@@ -109,7 +109,7 @@ O código diz **como** está agora; o índice diz **o que existe, onde mora e co
   - **Índice global da aplicação** (`INDEX_GLOBAL.md`) — o mapa macro: apps do umbrella / contexts / bounded contexts e como se comunicam; a relação de **pastas top-level** (`lib/`, `lib/<app>_web/`, `priv/`, `test/`) e a responsabilidade de cada uma; **o que cada coisa faz** e o ponto de entrada de **como se faz** (link pro fluxo/use-case/runbook). É o "mapa do território" — casa com o MAPA (padroes-codigo §4).
   - **Índice de microfunções** (`INDEX_FUNCTIONS.md`, por app/serviço) — o catálogo fino: cada função/módulo → **o quê**, **onde é usada/prevista**, dependências e efeitos colaterais. Gerado a partir dos `@doc`/`@spec` obrigatórios (§6, padroes-codigo §3).
 
-- Todo PR que **adiciona, remove ou move** funcionalidade atualiza o índice no mesmo PR. Índice desatualizado **trava o merge** (item da DoD, §35).
+- Todo PR que **adiciona, remove ou move** funcionalidade atualiza o índice no mesmo commit. Índice desatualizado **trava a promoção** (item da DoD, §35).
 
 - O índice é **fonte da verdade**: ao planejar uma feature, consulte-o primeiro pra não reimplementar o que já existe (anti-duplicação — liga com DRY semântico, §1).
 
